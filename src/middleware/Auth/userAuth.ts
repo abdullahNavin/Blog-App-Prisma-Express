@@ -16,7 +16,7 @@ export const userAuth = (...roles: string[]) => {
                 return res.status(401).json({ message: 'Unauthorized' })
             }
             if (roles.length && !roles.includes(session.user.role as UserRole)) {
-                return res.status(401).json({ message: 'Unauthorized' })
+                return res.status(401).json({ message: 'Forbiden access' })
             }
             req.user = {
                 id: session.user.id,

@@ -104,10 +104,30 @@ const updateComment = async (commentId: string, data: { content?: string, status
     })
 }
 
+const moderateComment = async (commentId: string, data: { status: commentStatus }) => {
+    console.log(data);
+    const findComment = await prisma.comment.findUniqueOrThrow({
+        where: {
+            id: commentId
+        }
+    })
+    if (findComment.status === data.status) {
+        throw new Error(`Your provided status ${data.status} is already up to date`)
+    }
+
+    return await prisma.comment.update({
+        where: {
+            id: findComment.id
+        },
+        data
+    })
+}
+
 export const commentServices = {
     createComment,
     getCommentsById,
     getCommentsByAuthor,
     deleteCommentbyId,
-    updateComment
+    updateComment,
+    moderateComment
 }
