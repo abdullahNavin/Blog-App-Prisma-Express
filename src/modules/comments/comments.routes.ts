@@ -5,6 +5,8 @@ import { UserRole } from "../../types/express/roleType";
 
 const router = Router()
 
+router.get('/:commentId', commentController.getCommentsById)
+
 router.post('/',
     userAuth(UserRole.ADMIN, UserRole.USER),
     commentController.createComment

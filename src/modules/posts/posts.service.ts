@@ -67,6 +67,11 @@ const getPost = async (payload: {
         },
         orderBy: {
             [sortBy]: sortOrder.toLocaleLowerCase() === "asc" ? "asc" : "desc",
+        },
+        include: {
+            _count: {
+                select: { comments: true }
+            }
         }
     });
 
@@ -105,6 +110,31 @@ const getPostById = async (id: string) => {
         const result = await tx.post.findUnique({
             where: {
                 id: id
+            },
+            include: {
+                comments: {
+                    where: {
+                        parentId: null
+                    },
+                    orderBy: {
+                        createdAt: 'desc'
+                    },
+                    include: {
+                        replies: {
+                            include: {
+                                replies: {
+                                    orderBy: { createdAt: 'asc' }
+                                },
+
+                            },
+                            orderBy: { createdAt: 'asc' }
+                        }
+                    }
+
+                },
+                _count: {
+                    select: { comments: true }
+                }
             }
         })
         return result;
