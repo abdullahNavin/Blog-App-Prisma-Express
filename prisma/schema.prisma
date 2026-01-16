@@ -27,16 +27,16 @@ model Post {
 
 model Comment {
   id        String        @id @default(uuid())
-  authorId  String
-  postId    String
-  parentId  String?
-  status    commentStatus @default(PENDING)
   content   String
+  authorId  String
+  parentId  String?
+  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id], onDelete: Cascade)
+  postId    String
+  post      Post          @relation(fields: [postId], references: [id], onDelete: Cascade)
+  replies   Comment[]     @relation("CommentReplies")
+  status    commentStatus @default(PENDING)
   createdAt DateTime      @default(now())
   updatedAt DateTime      @updatedAt
-  parent    Comment?      @relation("CommentReplies", fields: [parentId], references: [id])
-  replies   Comment[]     @relation("CommentReplies")
-  post      Post          @relation(fields: [postId], references: [id])
 
   @@index([postId])
   @@index([authorId])
