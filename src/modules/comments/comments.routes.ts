@@ -7,6 +7,10 @@ const router = Router()
 
 router.get('/:commentId', commentController.getCommentsById)
 router.get('/author/:authorId', commentController.getCommentsByAuthor)
+router.delete('/:commentId',
+    userAuth(UserRole.ADMIN, UserRole.USER),
+    commentController.deleteCommentbyId
+)
 
 router.post('/',
     userAuth(UserRole.ADMIN, UserRole.USER),
