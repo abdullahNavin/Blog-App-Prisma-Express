@@ -46,7 +46,28 @@ const getCommentsById = async (commentId: string) => {
     return result;
 }
 
+const getCommentsByAuthor = async (authorId: string) => {
+    const result = await prisma.comment.findMany({
+        where: {
+            authorId: authorId
+        },
+        orderBy: { createdAt: 'asc' },
+        include: {
+            post: {
+                select: {
+                    id: true,
+                    title: true
+                }
+            }
+        }
+    })
+    return result;
+}
+
+
+
 export const commentServices = {
     createComment,
-    getCommentsById
+    getCommentsById,
+    getCommentsByAuthor,
 }
