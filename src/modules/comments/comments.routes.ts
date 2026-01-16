@@ -12,6 +12,11 @@ router.delete('/:commentId',
     commentController.deleteCommentbyId
 )
 
+router.patch('/:commentId',
+    userAuth(UserRole.ADMIN, UserRole.USER),
+    commentController.updateComment
+)
+
 router.post('/',
     userAuth(UserRole.ADMIN, UserRole.USER),
     commentController.createComment
