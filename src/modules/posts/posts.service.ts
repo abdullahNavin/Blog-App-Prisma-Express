@@ -142,8 +142,75 @@ const getPostById = async (id: string) => {
     return result;
 }
 
+const getAuthorPost = async (authorId: string) => {
+
+    const result = await prisma.post.findMany({
+        where: {
+            authorId: authorId
+        },
+        orderBy: {
+            createdAt: 'desc'
+        },
+        include: {
+            _count: {
+                select: {
+                    comments: true
+                },
+
+            }
+        }
+    })
+    const total = await prisma.post.count({
+        where: {
+            authorId: authorId
+        }
+    })
+    const aggerate = await prisma.post.aggregate({
+        _count: {
+            id: true
+        }
+
+    })
+    return { result, total, aggerate };
+}
+
+/*
+admin can update own post and user post
+user can update only own post and can't update isFeature 
+\*/
+
+const updatePost = async (postId: string, authorId: string, data: Partial<Post>, isAdmin: boolean) => {
+    const postData = await prisma.post.findUniqueOrThrow({
+        where: {
+            id: postId
+        },
+        select: {
+            id: true,
+            authorId: true
+        }
+    })
+
+    if (!isAdmin && postData.authorId !== authorId) {
+        throw new Error('You do not have permision to update this post')
+    }
+
+    if (!isAdmin) {
+        delete data.isFeatured
+    }
+
+    const result = await prisma.post.update({
+        where: {
+            id: postId
+        },
+        data
+    })
+    return result;
+}
+
 export const postsServices = {
     createPost,
     getPost,
-    getPostById
+    getPostById,
+    getAuthorPost,
+    updatePost
 };

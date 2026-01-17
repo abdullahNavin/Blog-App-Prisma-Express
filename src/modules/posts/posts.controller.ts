@@ -1,6 +1,7 @@
 import { Request, Response } from "express";
 import { postsServices } from "./posts.service";
 import paginationSortingHelper from "../../helper/pagination&Sorting";
+import { UserRole } from "../../types/express/roleType";
 
 const createPost = async (req: Request, res: Response) => {
   try {
@@ -54,7 +55,6 @@ const getPost = async (req: Request, res: Response) => {
 // get post by id
 const getPostById = async (req: Request, res: Response) => {
   const id = req.params.id
-  console.log(id);
   if (!id) {
     throw new Error('post id is required')
   }
@@ -73,8 +73,50 @@ const getPostById = async (req: Request, res: Response) => {
   }
 }
 
+const getAuthorPost = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const result = await postsServices.getAuthorPost(user?.id as string)
+
+    res.status(200).json(result)
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: "faield to get post"
+    })
+  }
+}
+
+
+const updatePost = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+    const { postId } = req.params
+
+    const isAdmin = user?.roles === UserRole.ADMIN
+    console.log(user?.id);
+
+    if (!postId || !user?.id) {
+      throw new Error('post id and user id are required')
+    }
+
+    const result = await postsServices.updatePost(postId, user?.id, req.body, isAdmin)
+
+    res.status(200).json(result)
+  } catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+}
+
+
+
 export const postContoller = {
   createPost,
   getPost,
-  getPostById
+  getPostById,
+  getAuthorPost,
+  updatePost
 };
