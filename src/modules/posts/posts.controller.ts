@@ -135,7 +135,6 @@ const deletePost = async (req: Request, res: Response) => {
 
 const getStats = async (req: Request, res: Response) => {
   try {
-    console.log(req.user);
     const result = await postsServices.getStats()
     res.status(200).json(result)
   }
