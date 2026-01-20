@@ -1,6 +1,7 @@
-import { Post } from "../../../generated/prisma/client";
+import { Post, postStatus } from "../../../generated/prisma/client";
 import { PostWhereInput } from "../../../generated/prisma/models";
 import { prisma } from "../../lib/prisma";
+import { UserRole } from "../../types/express/roleType";
 
 const createPost = async (
     data: Omit<Post, "id" | "updatedAt" | "createdAt" | "authorId">,
@@ -93,8 +94,19 @@ const getPost = async (payload: {
 
 // get post by id
 const getPostById = async (id: string) => {
-
+    // console.log(id);
     const result = await prisma.$transaction(async (tx) => {
+        // Check if post exists first
+        // const postExists = await tx.post.findUnique({
+        //     where: {
+        //         id: id
+        //     },
+        //     select: { id: true }
+        // })
+
+        // if (!postExists) {
+        //     throw new Error('Post not found')
+        // }
 
         await tx.post.update({
             where: {
@@ -207,10 +219,60 @@ const updatePost = async (postId: string, authorId: string, data: Partial<Post>,
     return result;
 }
 
+const deletePost = async (postId: string, authorId: string, isAdmin: boolean) => {
+    const postData = await prisma.post.findUniqueOrThrow({
+        where: {
+            id: postId
+        },
+
+        select: {
+            id: true,
+            authorId: true
+        }
+    })
+
+    if (!isAdmin && postData.authorId !== authorId) {
+        throw new Error('You do not have permision to update this post')
+    }
+
+    const result = await prisma.post.delete({
+        where: {
+            id: postData.id
+        }
+    })
+    return result;
+}
+
+const getStats = async () => {
+    return await prisma.$transaction(async (tx) => {
+
+        const [totalPost, publishedpost, totalComment, Alluser, totalusers, Admin, totalView] = await Promise.all([
+            await tx.post.count(),
+            await tx.post.count({ where: { status: postStatus.PUBLISHED } }),
+            await tx.comment.count(),
+            await tx.user.count(),
+            await tx.user.count({ where: { role: UserRole.USER } }),
+            await tx.user.count({ where: { role: UserRole.ADMIN } }),
+            await tx.post.aggregate({ _sum: { veiws: true } })
+        ])
+        return {
+            totalPost,
+            publishedpost,
+            totalComment,
+            Alluser,
+            totalusers,
+            Admin,
+            totalView: totalView._sum.veiws
+        }
+    })
+}
+
 export const postsServices = {
     createPost,
     getPost,
     getPostById,
     getAuthorPost,
-    updatePost
+    updatePost,
+    deletePost,
+    getStats
 };

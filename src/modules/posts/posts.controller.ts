@@ -111,6 +111,43 @@ const updatePost = async (req: Request, res: Response) => {
   }
 }
 
+const deletePost = async (req: Request, res: Response) => {
+  try {
+    const user = req.user
+
+    const { postId } = req.params
+
+    if (!postId || !user?.roles) {
+      throw new Error('post id and user id are required')
+    }
+
+    const isAdmin = user?.roles === UserRole.ADMIN
+    const result = await postsServices.deletePost(postId, user?.id, isAdmin)
+    res.status(200).json(result)
+  }
+  catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+}
+
+const getStats = async (req: Request, res: Response) => {
+  try {
+    console.log(req.user);
+    const result = await postsServices.getStats()
+    res.status(200).json(result)
+  }
+  catch (error: any) {
+    res.status(500).json({
+      success: false,
+      message: error.message
+    })
+  }
+}
+
+
 
 
 export const postContoller = {
@@ -118,5 +155,7 @@ export const postContoller = {
   getPost,
   getPostById,
   getAuthorPost,
-  updatePost
+  updatePost,
+  deletePost,
+  getStats
 };
