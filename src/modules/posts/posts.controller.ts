@@ -1,4 +1,4 @@
-import { Request, Response } from "express";
+import { NextFunction, Request, Response } from "express";
 import { postsServices } from "./posts.service";
 import paginationSortingHelper from "../../helper/pagination&Sorting";
 import { UserRole } from "../../types/express/roleType";
@@ -53,7 +53,7 @@ const getPost = async (req: Request, res: Response) => {
 };
 
 // get post by id
-const getPostById = async (req: Request, res: Response) => {
+const getPostById = async (req: Request, res: Response, next: NextFunction) => {
   const id = req.params.id
   if (!id) {
     throw new Error('post id is required')
@@ -66,10 +66,7 @@ const getPostById = async (req: Request, res: Response) => {
 
   }
   catch (error) {
-    res.status(404).json({
-      message: 'failed to get data',
-      error: error
-    })
+    next(error)
   }
 }
 
